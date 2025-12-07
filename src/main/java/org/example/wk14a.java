@@ -144,17 +144,16 @@ public class wk14a implements ActionListener {
 			check_area = new JTextArea();
 			check_box = new JComboBox<String>();
 			
-			frame.setVisible(false);
+			// Create new frame instead of reusing the login frame
+			JFrame infoFrame = new JFrame();
+			JPanel infoPanel = new JPanel();
+
+			// Position to the right of login window
+			infoFrame.setLocation(frame.getX() + frame.getWidth() + 10, frame.getY());
 			
-			frame = new JFrame();
-			panel = new JPanel();
-			
-			frame.setLocation(400, 0);
-			
-			panel.setFont(new Font(null, 1, 12));
-			panel.setBorder(new TitledBorder("Inquiry"));
-			panel.setBounds(380, 80, 490, 280);
-			panel.setLayout(null);
+			infoPanel.setFont(new Font(null, 1, 12));
+			infoPanel.setBorder(new TitledBorder("Inquiry"));
+			infoPanel.setLayout(null);
 			
 			addAllTableNamesToCheckBox();
 			
@@ -168,16 +167,16 @@ public class wk14a implements ActionListener {
 			scroll.setBounds(10, 80, 460, 270);
 			
 			check_box.addActionListener(this);
-			
-			panel.add(check_box);
-			panel.add(scroll);
-			
-			frame.add(panel);
-			
-			frame.setTitle("Course Info");              
-			frame.setSize(500, 400);
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			frame.setVisible(true);
+
+			infoPanel.add(check_box);
+			infoPanel.add(scroll);
+
+			infoFrame.add(infoPanel);
+
+			infoFrame.setTitle("University Info");
+			infoFrame.setSize(500, 400);
+			infoFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			infoFrame.setVisible(true);
 		}
 		
 		/*
@@ -191,7 +190,9 @@ public class wk14a implements ActionListener {
 		 */
 		private void addAllTableNamesToCheckBox() {
 			// fill in here
-			
+			for (String tableName : univDBTableNames) {
+				check_box.addItem(tableName);
+			}
 			// end
 		}
 
@@ -229,6 +230,11 @@ public class wk14a implements ActionListener {
 		 */ 
 		private String getQuery(String tn) {
 			// fill in here
+			for (int i = 0; i < univDBTableNames.length; i++) {
+				if (univDBTableNames[i].equals(tn)) {
+					return queries[i];
+				}
+			}
 			return null;
 			// end
 		}
@@ -261,11 +267,62 @@ public class wk14a implements ActionListener {
 		 *  
 		 */
 		private void showTable() throws SQLException {
-			
+
 			// fill in here
-			
+			String tableName = (String) check_box.getSelectedItem();
+			if (tableName == null) {
+				return;
+			}
+
+			String query = getQuery(tableName);
+			if (query == null) {
+				return;
+			}
+
+			PreparedStatement pstmt = conn.prepareStatement(query);
+			ResultSet rs = pstmt.executeQuery();
+			ResultSetMetaData rsmd = rs.getMetaData();
+
+			int columnCount = rsmd.getColumnCount();
+			StringBuilder result = new StringBuilder();
+
+			// First row: column names separated by tabs
+			int totalColumnNameLength = 0;
+			for (int i = 1; i <= columnCount; i++) {
+				String columnName = rsmd.getColumnName(i);
+				result.append(columnName);
+				totalColumnNameLength += columnName.length();
+				if (i < columnCount) {
+					result.append("\t");
+				}
+			}
+			result.append("\n");
+
+			// Second row: dashes (column name length * 3)
+			int dashCount = totalColumnNameLength * 3;
+			for (int i = 0; i < dashCount; i++) {
+				result.append("-");
+			}
+			result.append("\n");
+
+			// Data rows
+			while (rs.next()) {
+				for (int i = 1; i <= columnCount; i++) {
+					String value = rs.getString(i);
+					result.append(value != null ? value : "NULL");
+					if (i < columnCount) {
+						result.append("\t");
+					}
+				}
+				result.append("\n");
+			}
+
+			check_area.setText(result.toString());
+
+			rs.close();
+			pstmt.close();
 			// end
-			
+
 		}
 		
 	    /**
