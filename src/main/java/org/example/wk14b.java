@@ -55,8 +55,14 @@ public class wk14b implements ActionListener {
 	
 	private JTextArea check_area;
 	private JComboBox<String> check_box;
-	
-	String[] queries = {"SELECT * FROM course", 
+
+	private JTextField courseIdInput;
+	private JTextField sectionIdInput;
+	private JTextField semesterInput;
+	private JTextField yearInput;
+	private JButton registerButton;
+
+	String[] queries = {"SELECT * FROM course",
 			"SELECT * FROM section", "SELECT * FROM prereq"};
 	
 	/*
@@ -114,37 +120,75 @@ public class wk14b implements ActionListener {
 	private void courseInfo() {
 		check_area = new JTextArea();
 		check_box = new JComboBox<String>();
-		
+
 		frame.setVisible(false);
-		
+
 		frame = new JFrame();
 		panel = new JPanel();
-		
+
 		panel.setFont(new Font(null, 1, 12));
 		panel.setBorder(new TitledBorder("Inquiry"));
 		panel.setBounds(380, 80, 490, 280);
 		panel.setLayout(null);
-		
+
 		check_box.addItem("Course");
 		check_box.addItem("Section");
 		check_box.addItem("Prereq");
-		
+
+		// Create registration fields
+		JLabel courseIdLabel = new JLabel("CourseID");
+		JLabel sectionIdLabel = new JLabel("SectionID");
+		JLabel semesterLabel = new JLabel("Semester");
+		JLabel yearLabel = new JLabel("Year");
+
+		courseIdInput = new JTextField();
+		sectionIdInput = new JTextField();
+		semesterInput = new JTextField();
+		yearInput = new JTextField();
+		registerButton = new JButton("Register");
+
 		check_area.setBorder(new LineBorder(Color.gray, 2));
 		check_area.setEditable(false);
-		
+
 		JScrollPane scroll = new JScrollPane();
 		scroll.setViewportView(check_area);
-		
+
+		// Position components
 		check_box.setBounds(20, 40, 70, 30);
+
+		courseIdLabel.setBounds(110, 30, 60, 20);
+		courseIdInput.setBounds(110, 50, 70, 25);
+
+		sectionIdLabel.setBounds(190, 30, 60, 20);
+		sectionIdInput.setBounds(190, 50, 70, 25);
+
+		semesterLabel.setBounds(270, 30, 60, 20);
+		semesterInput.setBounds(270, 50, 70, 25);
+
+		yearLabel.setBounds(350, 30, 40, 20);
+		yearInput.setBounds(350, 50, 50, 25);
+
+		registerButton.setBounds(410, 45, 80, 30);
+
 		scroll.setBounds(10, 80, 460, 270);
-		
+
 		check_box.addActionListener(this);
-		
+		registerButton.addActionListener(this);
+
 		panel.add(check_box);
+		panel.add(courseIdLabel);
+		panel.add(courseIdInput);
+		panel.add(sectionIdLabel);
+		panel.add(sectionIdInput);
+		panel.add(semesterLabel);
+		panel.add(semesterInput);
+		panel.add(yearLabel);
+		panel.add(yearInput);
+		panel.add(registerButton);
 		panel.add(scroll);
-		
+
 		frame.add(panel);
-		
+
 		frame.setTitle("Course Info");
 		frame.setSize(500, 400);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -161,7 +205,7 @@ public class wk14b implements ActionListener {
 			// Get the text entered in JTextField and JPasswordField
 			user = idInput.getText();
 			password = new String(pwdInput.getPassword());
-			
+
 			conn = this.connect();
 			if (conn != null) {
 				courseInfo();
@@ -169,6 +213,12 @@ public class wk14b implements ActionListener {
 		} else if (e.getSource() == check_box) {
 			try {
 				showTable();
+			} catch (SQLException se) {
+				se.printStackTrace();
+			}
+		} else if (e.getSource() == registerButton) {
+			try {
+				registerCourse();
 			} catch (SQLException se) {
 				se.printStackTrace();
 			}
@@ -245,9 +295,59 @@ public class wk14b implements ActionListener {
 		}
 
 		check_area.setText(displayMsg);
-		
+
 	}
-	
+
+	/*
+	 * Task 1: Implement exception handling for invalid course registration
+	 *
+	 * This method checks if the course section exists in the database
+	 * before registering the student. If the course section does not exist,
+	 * it shows an error message.
+	 */
+	private void registerCourse() throws SQLException {
+		String courseId = courseIdInput.getText().trim();
+		String sectionId = sectionIdInput.getText().trim();
+		String semester = semesterInput.getText().trim();
+		String year = yearInput.getText().trim();
+
+		// Check if the section exists in the database
+		String checkQuery = "SELECT * FROM section WHERE course_id = ? AND sec_id = ? AND semester = ? AND year = ?";
+		PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
+		checkStmt.setString(1, courseId);
+		checkStmt.setString(2, sectionId);
+		checkStmt.setString(3, semester);
+		checkStmt.setInt(4, Integer.parseInt(year));
+
+		ResultSet rs = checkStmt.executeQuery();
+
+		if (!rs.next()) {
+			// Course section does not exist - show error message
+			String errorMsg = user + ": You cannot register in the course " + courseId +
+					" section " + sectionId + " for the " + semester +
+					" semester in " + year + " because such a course is not offered!";
+			JOptionPane.showMessageDialog(frame, errorMsg, "Message", JOptionPane.INFORMATION_MESSAGE);
+		} else {
+			// Course section exists - proceed with registration
+			// Note: We don't need to handle SQLException for duplicate registration as per requirements
+			String insertQuery = "INSERT INTO takes (ID, course_id, sec_id, semester, year) VALUES (?, ?, ?, ?, ?)";
+			PreparedStatement insertStmt = conn.prepareStatement(insertQuery);
+			insertStmt.setString(1, user);  // student ID
+			insertStmt.setString(2, courseId);
+			insertStmt.setString(3, sectionId);
+			insertStmt.setString(4, semester);
+			insertStmt.setInt(5, Integer.parseInt(year));
+
+			insertStmt.executeUpdate();
+			insertStmt.close();
+
+			JOptionPane.showMessageDialog(frame, "Successfully registered for the course!", "Success", JOptionPane.INFORMATION_MESSAGE);
+		}
+
+		rs.close();
+		checkStmt.close();
+	}
+
     /**
      * Connect to the PostgreSQL database
      *
