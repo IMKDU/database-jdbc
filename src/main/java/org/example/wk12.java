@@ -58,35 +58,70 @@ public class wk12 implements ActionListener {
 		url = "jdbc:postgresql://localhost/postgres";
 		user = "postgres";
 		password = "1234";
-		
+
 		// fill in here
-		
+		frame = new JFrame("Database Login");
+		panel = new JPanel();
+
+		idLabel = new JLabel("User ID:");
+		pwdLabel = new JLabel("Password:");
+		statusLabel = new JLabel("Status:");
+
+		idInput = new JTextField(15);
+		pwdInput = new JPasswordField(15);
+		statusMessageLabel = new JTextField(30);
+		statusMessageLabel.setEditable(false);
+
+		loginButton = new JButton("Login");
+		getTablesButton = new JButton("Get Tables");
+
+		loginButton.addActionListener(this);
+		getTablesButton.addActionListener(this);
 		// end
 	}
 	
 	/*
-	 * Task 2. 
-	 * Implement this method to properly display 
-	 * GUI components. 
+	 * Task 2.
+	 * Implement this method to properly display
+	 * GUI components.
 	 */
 	public void task2() {
 		// fill in here
-		
-		
+		panel.add(idLabel);
+		panel.add(idInput);
+		panel.add(pwdLabel);
+		panel.add(pwdInput);
+		panel.add(loginButton);
+		panel.add(getTablesButton);
+		panel.add(statusLabel);
+		panel.add(statusMessageLabel);
+
+		frame.add(panel);
+		frame.setSize(400, 250);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
 		// end
 	}
 	
 	/*
-	 * Task 3. 
-	 * Implement this method to connect to the database 
-	 * with the input user ID and password. 
+	 * Task 3.
+	 * Implement this method to connect to the database
+	 * with the input user ID and password.
 	 */
 	public Connection task3() {
 		String statusMessageString = "Connected";
 		// fill in here
-		
+		user = idInput.getText();
+		password = new String(pwdInput.getPassword());
+
+		Connection conn = this.connect();
+		if (conn != null) {
+			statusMessageLabel.setText(statusMessageString);
+		} else {
+			statusMessageLabel.setText("Connection Failed");
+		}
 		// end
-		return this.connect();
+		return conn;
 	}
 	
 	/*
@@ -97,15 +132,27 @@ public class wk12 implements ActionListener {
 	public void task4() {
 		System.out.println("=====");
 		System.out.println("Task4");
-		System.out.println("=====");	
+		System.out.println("=====");
 		String statusMessageString = "Available Tables are printed out on Console";
 		try {
 			// fill in here
+			java.sql.DatabaseMetaData metaData = conn.getMetaData();
+			java.sql.ResultSet tables = metaData.getTables(null, null, "%", new String[]{"TABLE"});
 
+			while (tables.next()) {
+				String tableName = tables.getString("TABLE_NAME");
+				System.out.println(tableName);
+			}
+
+			tables.close();
+			statusMessageLabel.setText(statusMessageString);
 			// end
 		} catch (NullPointerException ne) {
 			ne.printStackTrace();
 			statusMessageLabel.setText("NullPointerException: Did you Login?");
+		} catch (SQLException se) {
+			se.printStackTrace();
+			statusMessageLabel.setText("SQLException: " + se.getMessage());
 		}
 		System.out.println("");
 		System.out.println("");
