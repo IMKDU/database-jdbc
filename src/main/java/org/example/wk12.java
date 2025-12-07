@@ -1,5 +1,8 @@
 package com.assignment.wk12;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
@@ -50,9 +53,9 @@ public class wk12 implements ActionListener {
 	}
 	
 	/*
-	 * Task 1. 
-	 * Implement this method to properly initialize 
-	 * GUI components. 
+	 * Task 1.
+	 * Implement this method to properly initialize
+	 * GUI components.
 	 */
 	public void task1() {
 		url = "jdbc:postgresql://localhost/postgres";
@@ -60,20 +63,20 @@ public class wk12 implements ActionListener {
 		password = "1234";
 
 		// fill in here
-		frame = new JFrame("Database Login");
-		panel = new JPanel();
+		frame = new JFrame("Week12 Assignment");
+		panel = new JPanel(new GridBagLayout());
 
-		idLabel = new JLabel("User ID:");
-		pwdLabel = new JLabel("Password:");
-		statusLabel = new JLabel("Status:");
+		idLabel = new JLabel("ID");
+		pwdLabel = new JLabel("Password");
+		statusLabel = new JLabel("Status");
 
-		idInput = new JTextField(15);
-		pwdInput = new JPasswordField(15);
+		idInput = new JTextField(20);
+		pwdInput = new JPasswordField(20);
 		statusMessageLabel = new JTextField(30);
 		statusMessageLabel.setEditable(false);
 
 		loginButton = new JButton("Login");
-		getTablesButton = new JButton("Get Tables");
+		getTablesButton = new JButton("Tables");
 
 		loginButton.addActionListener(this);
 		getTablesButton.addActionListener(this);
@@ -87,17 +90,55 @@ public class wk12 implements ActionListener {
 	 */
 	public void task2() {
 		// fill in here
-		panel.add(idLabel);
-		panel.add(idInput);
-		panel.add(pwdLabel);
-		panel.add(pwdInput);
-		panel.add(loginButton);
-		panel.add(getTablesButton);
-		panel.add(statusLabel);
-		panel.add(statusMessageLabel);
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(10, 10, 10, 10);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+
+		// Row 0: ID Label and Input
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 0.0;
+		panel.add(idLabel, gbc);
+
+		gbc.gridx = 1;
+		gbc.weightx = 1.0;
+		panel.add(idInput, gbc);
+
+		// Row 1: Password Label and Input
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.weightx = 0.0;
+		panel.add(pwdLabel, gbc);
+
+		gbc.gridx = 1;
+		gbc.weightx = 1.0;
+		panel.add(pwdInput, gbc);
+
+		// Row 2: Login and Tables Buttons
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		gbc.weightx = 0.5;
+		panel.add(loginButton, gbc);
+
+		gbc.gridx = 1;
+		gbc.weightx = 0.5;
+		panel.add(getTablesButton, gbc);
+
+		// Row 3: Status Label
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		gbc.gridwidth = 2;
+		gbc.weightx = 1.0;
+		panel.add(statusLabel, gbc);
+
+		// Row 4: Status Message
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		gbc.gridwidth = 2;
+		panel.add(statusMessageLabel, gbc);
 
 		frame.add(panel);
-		frame.setSize(400, 250);
+		frame.setSize(450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 		// end
