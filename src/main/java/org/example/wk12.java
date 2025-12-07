@@ -1,4 +1,4 @@
-package com.assignment.wk12;
+package org.example;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -58,9 +58,9 @@ public class wk12 implements ActionListener {
 	 * GUI components.
 	 */
 	public void task1() {
-		url = "jdbc:postgresql://localhost/postgres";
+		url = "jdbc:postgresql://localhost:5432/postgres";
 		user = "postgres";
-		password = "1234";
+		password = "202203";
 
 		// fill in here
 		frame = new JFrame("Week12 Assignment");
